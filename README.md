@@ -82,6 +82,15 @@ This table follows the paper's own source map.
    instead of removing agents, the paper treats it as the rule-free evidence that genuine rates are
    lower.
 
+## Absolute paths in the data (never in the code)
+
+Every script resolves its paths from its own location, so a clone runs as-is. The **data** does record
+the absolute path of the machine that produced it: each run's `resumen.json` stores the path of its own
+`eventos.jsonl`, and some analysis outputs record the roots they scanned (`reportes/incidente.json`, for
+example). That is part of the evidence trail, and it is left intact rather than rewritten, because the
+paper cites hashes of those artifacts. If you need a portable copy for another host, rewrite those
+fields only after checking which hashes you must keep.
+
 ## What is not here
 
 - **The July 2026 incident corpus is not redistributed.** The evidence from the OpenAI–Hugging Face
