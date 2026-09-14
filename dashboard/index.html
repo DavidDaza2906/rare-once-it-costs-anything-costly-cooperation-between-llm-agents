@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Pagaron para ayudar?</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#161a21; --panel2:#1b2029; --line:#252b36; --tx:#e6e9ef; --dim:#8d97a8;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149; --acc:#58a6ff; --viol:#a371f7;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .env{max-width:1080px;margin:0 auto;padding:26px 20px 70px}
+  h1{font-size:25px;margin:0 0 6px;font-weight:650;letter-spacing:-.01em}
+  .lede{color:var(--dim);margin:0 0 4px;max-width:74ch}
+  .estado{color:var(--dim);font-size:13px;margin:10px 0 0}
+  h2{font-size:15px;margin:30px 0 10px;font-weight:600}
+  h3{font-size:14px;margin:0 0 10px}
+  select{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font:inherit}
+  .fila-sel{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:22px 0 0;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+  .fila-sel label{color:var(--dim);font-size:13.5px}
+  .aviso{font-size:13px;color:var(--warn)}
+  .aviso.info{color:var(--dim)}
+  .destacado{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0 4px}
+  .big{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+  .big .k{color:var(--dim);font-size:13px;margin-bottom:7px}
+  .big .v{font:650 34px/1 var(--mono);letter-spacing:-.02em}
+  .big .h{color:var(--dim);font-size:12.5px;margin-top:7px}
+  .big.principal{border-color:#2b4a7a;background:linear-gradient(180deg,#16202e,#161a21)}
+  .big.ok .v{color:var(--ok)} .big.warn .v{color:var(--warn)}
+  .caja{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px;margin-top:14px}
+  .barra{display:grid;grid-template-columns:150px 1fr 96px;gap:11px;align-items:center;margin:11px 0}
+  .barra .et{color:var(--dim);font-size:13.5px}
+  .barra .pista{height:26px;background:var(--panel2);border-radius:7px;overflow:hidden;position:relative}
+  .barra .pista i{display:block;height:100%;background:linear-gradient(90deg,#2f6fb5,#58a6ff);border-radius:7px}
+  .barra .pista i.cero{background:linear-gradient(90deg,#3d3520,#d29922)}
+  .barra .val{font:600 16px var(--mono);text-align:right}
+  .barra .val span{color:var(--dim);font-weight:400;font-size:12.5px;display:block}
+  .lectura{margin:14px 0 0;padding:12px 14px;background:var(--panel2);border-radius:9px;font-size:14px}
+  .lectura b{font-weight:650}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.03em;font-weight:600;background:var(--panel2)}
+  td.num,th.num{text-align:right;font-family:var(--mono)}
+  tbody tr{cursor:pointer} tbody tr:hover{background:#1c2129} tbody tr.sel{background:#1d2531}
+  tbody tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+  .pill.si{color:var(--ok);border-color:#1f4d2a;background:#12240f66}
+  .pill.no{color:var(--dim)}
+  .pill.sin{color:var(--warn);border-color:#4d3d11}
+  .pill.etq{color:var(--viol);border-color:#3d2a5d}
+  .agentes{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:11px}
+  .ag{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .ag .cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px}
+  .ag .nom{font-weight:600}
+  .ag .pre{font:600 13px var(--mono);color:var(--dim)}
+  .ag .dato{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;margin:4px 0}
+  .ag .dato .k{color:var(--dim)}
+  .ag .gasto{height:7px;background:var(--panel2);border-radius:5px;overflow:hidden;margin:9px 0 11px}
+  .ag .gasto i{display:block;height:100%;background:var(--acc)}
+  .ag button{width:100%;background:var(--panel2);color:var(--tx);border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;font-size:13.5px;cursor:pointer}
+  .ag button:hover{border-color:var(--acc)}
+  .msg{border-left:3px solid var(--line);padding:9px 12px;margin:9px 0;background:var(--panel);border-radius:0 9px 9px 0}
+  .msg.sys{border-color:var(--viol)} .msg.user{border-color:var(--acc)}
+  .msg.assistant{border-color:var(--ok)} .msg.tool{border-color:var(--warn)}
+  .msg .rol{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);margin-bottom:4px}
+  .msg pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--mono);font-size:13px;max-height:420px;overflow:auto}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--acc);font-size:13.5px}
+  .tec{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+  .tec div{margin:3px 0}
+  pre.doc{white-space:pre-wrap;font-family:var(--mono);font-size:12.5px;max-height:60vh;overflow:auto;margin:10px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .vacio{color:var(--dim);font-style:italic;padding:12px 0}
+  a{color:var(--acc)}
+  .mini{font-size:12.5px;color:var(--dim)}
+  .mono{font-family:var(--mono);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="env">
+  <h1>¿Pagaron para ayudar?</h1>
+  <p class="lede">Cada agente recibe un presupuesto de pasos para completar su tarea. En el almacén le
+    espera la petición de un desconocido que no le devuelve nada. Ayudar cuesta pasos de ese
+    presupuesto —los mismos que necesita para su tarea— y no mejora su puntaje. Esto mide cuántos lo
+    hacen, y si el precio cambia la decisión.</p>
+  <p class="estado" id="estado">cargando…</p>
+
+  <div class="fila-sel">
+    <label for="fvista">Qué datos mirar:</label>
+    <select id="fvista"></select>
+    <span class="aviso" id="aviso"></span>
+  </div>
+
+  <details>
+    <summary>Cómo leer esto</summary>
+    <ul style="margin:10px 0 0;padding-left:22px;color:var(--dim);font-size:14px;line-height:1.7">
+      <li><b>Ayudaron pagando de su presupuesto</b> es el número importante: el agente gastó pasos
+        —los mismos que necesita para su propia tarea— en responder al desconocido.</li>
+      <li><b>Dejaron algo, lo que fuera</b> es más ancho: incluye también partes sueltas y códigos
+        ensamblados que nadie pidió. Va plegado porque no es lo mismo que responder.</li>
+      <li>En la <b>diferencia entre caro y barato</b>, si el margen de error incluye el cero,
+        entonces con los datos que hay todavía no se puede distinguir de cero.</li>
+      <li>Cada bloque de datos es una <b>versión del instrumento</b>: cuando cambia la escena o el
+        arnés, cambia el hash y las corridas se reportan aparte. <b>Nunca se suman entre versiones.</b></li>
+      <li>Las corridas marcadas como ensayo o prueba <b>no cuentan</b> para el total del lote.</li>
+    </ul>
+  </details>
+
+  <div id="panel"></div>
+
+  <h2>Las corridas <span class="mini">— clic en una para ver a sus agentes</span></h2>
+  <table>
+    <thead><tr>
+      <th>cuándo</th><th class="num">agentes</th><th class="num">ayudaron</th>
+      <th class="num">terminaron su tarea</th><th class="num">presupuesto usado</th><th>estado</th>
+    </tr></thead>
+    <tbody id="tcor"></tbody>
+  </table>
+
+  <div id="det"></div>
+
+  <h2>¿Se repite con otros modelos? <span class="mini">— exploratorio, no reemplaza el número de arriba</span></h2>
+  <div id="generalizacion"><div class="vacio">cargando…</div></div>
+
+<h2>El reclutador: ¿pesa pedir por un tercero? <span class="mini">— exploratorio; el mecanismo del incidente, con costo real</span></h2>
+  <div id="reclutador"><div class="vacio">cargando…</div></div>
+
+  <h2>El conjunto congelado y el titular <span class="mini">— la mirada única, el contraste 0 contra 5 y el primario</span></h2>
+  <div id="congelado"><div class="vacio">cargando…</div></div>
+
+  <details>
+    <summary>Documentos del proyecto</summary>
+    <div class="fila-sel" style="margin-top:12px">
+      <label for="fdoc">Archivo:</label><select id="fdoc"></select>
+    </div>
+    <pre class="doc" id="doc"></pre>
+  </details>
+</div>
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = n => (n === null || n === undefined || n === '') ? '—' : Number(n).toLocaleString('es-CO');
+const pct = v => (v === null || v === undefined) ? '—' : Math.round(100 * v) + '%';
+const cuando = nombre => {
+  const m = String(nombre).match(/(\d{8})T(\d{2})(\d{2})(\d{2})/);
+  return m ? `${m[1].slice(6)}/${m[1].slice(4, 6)} ${m[2]}:${m[3]}` : nombre;
+};
+const sel = (v, txt) => `<span class="pill ${v ? 'si' : 'no'}">${txt}</span>`;
+const tri = (v, si = 'sí', no = 'no') => (v === undefined || v === null)
+  ? '<span class="pill sin">sin dato</span>' : sel(v, v ? si : no);
+
+let CORRIDAS = [], AGREGADO = null, VISTA = null, SEL = null;
+
+// etiqueta legible de cada version del instrumento
+function nombreVista(g) {
+  const base = g.brazo === 'costo-cero' ? 'Ayudar era gratis (precio 0)' : 'Ayudar costaba 5 o 20';
+  const cuando_ = (g.corridas_lista || []).map(cuando).sort()[0] || '';
+  return `${base} · ${g.corridas} ${g.corridas === 1 ? 'corrida' : 'corridas'} del ${cuando_}`;
+}
+
+function corridasDe(g) {
+  return CORRIDAS.filter(c => (c.etiqueta || '') === (g.etiqueta || '')
+    && c.brazo === g.brazo && c.hash_escena === g.hash_escena && c.hash_textos === g.hash_textos);
+}
+
+/* ---------- 1. el resultado de la version elegida ---------- */
+
+function pintarPanel() {
+  const g = AGREGADO.grupos[VISTA];
+  const cont = document.getElementById('panel');
+  if (!g) { cont.innerHTML = '<div class="vacio">sin datos para esta selección</div>'; return; }
+  const grupos = corridasDe(g);
+  const aviso = document.getElementById('aviso');
+
+  if (g.h4_costo_cero) {
+    const c = g.h4_costo_cero;
+    aviso.className = 'aviso info';
+    aviso.textContent = 'Aquí ayudar no cuesta pasos: mide la línea base, no el sacrificio.';
+    cont.innerHTML = `<div class="destacado">
+        <div class="big principal"><div class="k">Ayudaron, aunque ayudar no costaba nada</div>
+          <div class="v">${pct(c.clave.tasa)}</div>
+          <div class="h">${c.clave.k} de ${c.clave.n} agentes · IC95 ${pct(c.clave.ic[0])}–${pct(c.clave.ic[1])}</div></div>
+        <div class="big"><div class="k">Terminaron su propia tarea</div>
+          <div class="v">${g.tarea.n ? pct(g.tarea.ok / g.tarea.n) : '—'}</div>
+          <div class="h">${g.tarea.ok} de ${g.tarea.n}</div></div>
+        <div class="big"><div class="k">Presupuesto usado</div>
+          <div class="v">${num(g.tokens)}</div><div class="h">tokens en ${g.corridas} corridas</div></div>
+      </div>
+      <div class="caja">
+        <h3>Lo que dejaron en el almacén</h3>
+        <div class="barra"><div class="et">respondieron al desconocido</div>
+          <div class="pista"><i style="width:${Math.round(100 * (c.clave.tasa || 0))}%"></i></div>
+          <div class="val">${pct(c.clave.tasa)}<span>${c.clave.k}/${c.clave.n}</span></div></div>
+        <div class="barra"><div class="et">dejaron algo, lo que fuera</div>
+          <div class="pista"><i style="width:${Math.round(100 * (c.union.tasa || 0))}%"></i></div>
+          <div class="val">${pct(c.union.tasa)}<span>${c.union.k}/${c.union.n}</span></div></div>
+        <div class="lectura">${esc(c.nota)}. Que <b>dejen algo</b> y que <b>respondan al desconocido</b>
+          no son lo mismo: en estos datos hay códigos ensamblados y partes sueltas que nadie pidió.</div>
+      </div>`;
+    return;
+  }
+
+  const p = g.primario, cl = g.celdas.clave, un = g.celdas.union;
+  const ic = p.ic_bootstrap;
+  const cruza = ic && ic[0] <= 0 && ic[1] >= 0;
+  let lectura;
+  if (p.media === null) lectura = 'todavía no hay corridas suficientes para comparar los dos precios.';
+  else if (cruza) lectura = `con estos datos la diferencia <b>todavía no se distingue de cero</b>: el intervalo va de ${ic[0].toFixed(2)} a ${ic[1].toFixed(2)}. Hacen falta más corridas, no otra lectura.`;
+  else if (p.media < 0) lectura = `ayudar <b>cae</b> cuando cuesta 20 en vez de 5: ${p.favor_barato} corridas a favor del precio bajo, ${p.empates} empates, ${p.favor_caro} a favor del caro.`;
+  else lectura = `ayudar <b>sube</b> cuando cuesta 20 en vez de 5, que es lo contrario de lo esperado: conviene mirar las conversaciones antes de creérselo.`;
+  aviso.className = 'aviso info';
+  aviso.textContent = g.etiqueta ? 'Estas corridas son un ensayo: no cuentan para el total del lote.' : '';
+
+  cont.innerHTML = `<div class="destacado">
+      <div class="big principal"><div class="k">Ayudaron pagando de su presupuesto</div>
+        <div class="v">${pct(cl.precio5.tasa !== null && cl.precio20.tasa !== null ? (cl.precio5.k + cl.precio20.k) / (cl.precio5.n + cl.precio20.n) : null)}</div>
+        <div class="h">${cl.precio5.k + cl.precio20.k} de ${cl.precio5.n + cl.precio20.n} agentes</div></div>
+      <div class="big"><div class="k">Terminaron su propia tarea</div>
+        <div class="v">${g.tarea.n ? pct(g.tarea.ok / g.tarea.n) : '—'}</div>
+        <div class="h">${g.tarea.ok} de ${g.tarea.n}</div></div>
+      <div class="big"><div class="k">Presupuesto usado</div>
+        <div class="v">${num(g.tokens)}</div><div class="h">tokens en ${g.corridas} corridas</div></div>
+    </div>
+    <div class="caja">
+      <h3>¿Ayudaron más cuando era barato?</h3>
+      <div class="barra"><div class="et">Cuando costaba <b>5</b></div>
+        <div class="pista"><i style="width:${Math.round(100 * (cl.precio5.tasa || 0))}%"></i></div>
+        <div class="val">${pct(cl.precio5.tasa)}<span>${cl.precio5.k} de ${cl.precio5.n}</span></div></div>
+      <div class="barra"><div class="et">Cuando costaba <b>20</b></div>
+        <div class="pista"><i style="width:${Math.round(100 * (cl.precio20.tasa || 0))}%"></i></div>
+        <div class="val">${pct(cl.precio20.tasa)}<span>${cl.precio20.k} de ${cl.precio20.n}</span></div></div>
+      <div class="lectura">Diferencia entre caro y barato: <b>${p.media === null ? '—' : (p.media > 0 ? '+' : '') + p.media.toFixed(2)}</b>
+        ${ic ? `<span class="mini">(margen de error: ${ic[0].toFixed(2)} a ${ic[1].toFixed(2)})</span>` : ''}
+        → ${lectura}</div>
+      <details><summary>Ver también: dejaron algo, lo que fuera (no es lo mismo que responder)</summary>
+        <div class="barra" style="margin-top:12px"><div class="et">Cualquier cosa, a <b>5</b></div>
+          <div class="pista"><i style="width:${Math.round(100 * (un.precio5.tasa || 0))}%"></i></div>
+          <div class="val">${pct(un.precio5.tasa)}<span>${un.precio5.k} de ${un.precio5.n}</span></div></div>
+        <div class="barra"><div class="et">Cualquier cosa, a <b>20</b></div>
+          <div class="pista"><i style="width:${Math.round(100 * (un.precio20.tasa || 0))}%"></i></div>
+          <div class="val">${pct(un.precio20.tasa)}<span>${un.precio20.k} de ${un.precio20.n}</span></div></div>
+        <p class="mini">Aquí entran también los códigos ensamblados y las partes sueltas, que no responden
+          a la petición del desconocido. Es el número que se veía antes de corregir el instrumento: por
+          eso el titular es el de arriba.</p>
+      </details>
+    </div>`;
+}
+
+/* ---------- 2. la tabla de corridas ---------- */
+
+function pintarTabla() {
+  const g = AGREGADO.grupos[VISTA];
+  const grupos = g ? corridasDe(g) : CORRIDAS;
+  const tb = document.getElementById('tcor');
+  tb.innerHTML = grupos.slice().reverse().map(c => `<tr data-c="${esc(c.corrida)}"${c.corrida === SEL ? ' class="sel"' : ''}>
+      <td>${esc(cuando(c.nombre))}</td>
+      <td class="num">${c.agentes_n}</td>
+      <td class="num">${c.claves} de ${c.agentes_n}</td>
+      <td class="num">${c.tarea_ok} de ${c.agentes_n}</td>
+      <td class="num">${num(c.tokens)}</td>
+      <td>${c.etiqueta ? `<span class="pill etq">${esc(c.etiqueta)}</span>` : '<span class="pill si">lote</span>'}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="vacio">sin corridas en esta selección</td></tr>';
+  tb.querySelectorAll('tr[data-c]').forEach(tr => tr.addEventListener('click', () => abrirCorrida(tr.dataset.c)));
+}
+
+/* ---------- 3. el detalle de una corrida: sus agentes ---------- */
+
+async function abrirCorrida(rel) {
+  SEL = rel;
+  pintarTabla();
+  const cont = document.getElementById('det');
+  cont.innerHTML = '<h2>Los agentes de esa corrida</h2><div class="vacio">cargando…</div>';
+  const d = await (await fetch('/api/corrida/' + rel.split('/').map(encodeURIComponent).join('/'))).json();
+  if (d.error) { cont.innerHTML = `<div class="vacio">${esc(d.error)}</div>`; return; }
+  const c = CORRIDAS.find(x => x.corrida === rel) || {};
+  const i = d.indicadores;
+  const tarjetas = d.agentes.map(a => {
+    const presupuesto = (a.gastado || 0) + (a.pasos_restantes || 0) || 40;
+    const usado = Math.round(100 * (a.gastado || 0) / presupuesto);
+    return `<div class="ag">
+      <div class="cab"><span class="nom">${esc(a.id)}</span>
+        <span class="pre">${a.precio_depositar === 0 ? 'ayudar era gratis' : 'ayudar costaba ' + (a.precio_depositar ?? '?')}</span></div>
+      <div class="dato"><span class="k">¿ayudó?</span>${tri(a.deposito_clave, 'sí, respondió', 'no respondió')}</div>
+      <div class="dato"><span class="k">¿terminó su tarea?</span>${tri(a.tarea_correcta, 'sí', 'no')}</div>
+      <div class="dato"><span class="k">gastó</span><span>${num(a.gastado)} de ${presupuesto} pasos</span></div>
+      <div class="gasto"><i style="width:${usado}%"></i></div>
+      <div class="dato"><span class="k">puntaje</span><span>${num(a.puntaje)}</span></div>
+      <button data-a="${esc(a.id)}">leer su conversación</button>
+    </div>`;
+  }).join('');
+  cont.innerHTML = `<h2>Los agentes <span class="mini">— ${esc(cuando(c.nombre || rel))}</span></h2>
+    <div class="agentes">${tarjetas || '<div class="vacio">sin agentes</div>'}</div>
+    <details><summary>Detalles técnicos del instrumento en esta corrida</summary>
+      <div class="tec" style="margin-top:10px">
+        <div>tokens: ${num(c.tokens)} · rondas: ${num(c.rondas)} · eventos: ${num(i.eventos)}</div>
+        <div>depósitos: ${i.depositos_clave} de la clave (${i.depositos_herr} por la herramienta, ${i.depositos_http} por HTTP)
+          · cualquier depósito: ${esc((c.depositos || []).length)}</div>
+        <div>doble cobro: ${(i.doble_cobro || []).length ? '<b>' + i.doble_cobro.length + ' detectado(s)</b>' : 'ninguno'}</div>
+        <div>comandos rechazados por el filtro: ${i.rechazos}</div>
+        <div>agotaron su cupo de acciones en alguna ronda: ${(i.cap_agotado || []).length ? esc(i.cap_agotado.join(', ')) : 'ninguno'}</div>
+        <div>hash de escena ${esc((c.hash_escena || '').slice(0, 10))} · textos ${esc((c.hash_textos || '').slice(0, 10))} · log ${esc(c.ultimo_hash || '')}</div>
+      </div>
+      <table style="margin-top:12px"><thead><tr><th>agente</th><th class="num">ronda</th><th>vía</th><th>qué dejó</th></tr></thead>
+        <tbody>${(c.depositos || []).map(x => `<tr><td>${esc(x.agente)}</td><td class="num">${x.ronda}</td>
+          <td>${esc(x.via || 'herramienta')}</td><td style="white-space:normal">${esc(x.texto)}</td></tr>`).join('')
+          || '<tr><td colspan="4" class="vacio">nadie dejó nada</td></tr>'}</tbody></table>
+    </details>
+    <div id="trans"></div>`;
+  cont.querySelectorAll('button[data-a]').forEach(b =>
+    b.addEventListener('click', () => abrirAgente(rel, b.dataset.a)));
+}
+
+/* ---------- 4. la conversacion de un agente ---------- */
+
+async function abrirAgente(rel, agente) {
+  const cont = document.getElementById('trans');
+  cont.innerHTML = `<h2>Conversación de ${esc(agente)}</h2><div class="vacio">cargando…</div>`;
+  const d = await (await fetch('/api/transcripcion/' + rel.split('/').map(encodeURIComponent).join('/')
+    + '/' + encodeURIComponent(agente))).json();
+  if (d.error) { cont.innerHTML = `<h2>Conversación de ${esc(agente)}</h2><div class="vacio">${esc(d.error)}</div>`; return; }
+  const rondas = d.rondas.map(r => {
+    const ms = (r.mensajes || []).map(m => {
+      const rol = String(m.rol || m.role || '').toLowerCase();
+      const clase = rol.includes('system') ? 'sys' : rol.includes('user') ? 'user'
+                  : rol.includes('tool') ? 'tool' : 'assistant';
+      const t = String(m.texto ?? m.content ?? '');
+      const largo = t.length > 1200;
+      const cuerpo = largo
+        ? `<pre>${esc(t.slice(0, 1200))}…</pre><details><summary>ver el resto</summary><pre>${esc(t.slice(1200))}</pre></details>`
+        : `<pre>${esc(t)}</pre>`;
+      return `<div class="msg ${clase}"><div class="rol">${esc(rol || 'mensaje')}</div>${cuerpo}</div>`;
+    }).join('');
+    return `<div style="margin-bottom:16px"><h3>${esc(r.archivo.replace(/\.json$/, '').replace('_', ' · '))}</h3>
+      ${ms || '<span class="vacio">vacío</span>'}</div>`;
+  }).join('');
+  cont.innerHTML = `<h2>Conversación de ${esc(agente)}</h2>
+    <p class="mini">El texto en morado es el sistema, en azul la tarea, en verde lo que el agente
+      escribió y en amarillo lo que le devolvieron las herramientas.</p>${rondas}`;
+  cont.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+/* ---------- 4.b generalizacion a otros modelos (exploratorio) ---------- */
+
+function nombreCorto(m) {
+  return { 'openai/gpt-5.4': 'GPT-5.4', 'google/gemini-3.1-flash-lite': 'Gemini 3.1 Flash Lite',
+           'deepseek/deepseek-v4.1-flash': 'DeepSeek V4.1 Flash',
+           'anthropic/claude-haiku-4.5': 'Claude Haiku 4.5',
+           'mistralai/mistral-small-2603': 'Mistral Small 2603' }[m] || m;
+}
+
+async function cargarGeneralizacion() {
+  const cont = document.getElementById('generalizacion');
+  let d;
+  try { d = await (await fetch('/api/reporte/generalizacion.json')).json(); }
+  catch { cont.innerHTML = '<div class="vacio">sin datos todavía — corre analisis/generalizacion.py</div>'; return; }
+  if (d.error || !d.modelos || !d.modelos.length) {
+    cont.innerHTML = '<div class="vacio">sin datos todavía — corre analisis/generalizacion.py</div>'; return;
+  }
+  const tarjetas = d.modelos.map(m => {
+    const nom = nombreCorto(m.modelo);
+    if (!m.clave) {
+      return `<div class="caja"><h3>${esc(nom)}</h3>
+        <p class="mini">${m.corridas} corrida${m.corridas === 1 ? '' : 's'} (${num(m.tokens_totales)} tokens,
+          ${num(m.tokens_promedio)} prom.) — muy poco para tasas; se cortó por tiempo de reloj, no por costo.</p>
+      </div>`;
+    }
+    const c5 = m.clave.precio5, c20 = m.clave.precio20, dif = m.clave.media_diferencia;
+    const t = m.tarea, cpc = m.clave_por_capacidad;
+    const tasaOk = cpc && t.ok ? cpc.completo_tarea.k / cpc.completo_tarea.n : null;
+    const tasaFalla = cpc && (t.n - t.ok) ? cpc.fallo_tarea.k / cpc.fallo_tarea.n : null;
+    const brechaGrande = tasaOk !== null && tasaFalla !== null && (tasaFalla - tasaOk) >= 0.3;
+    return `<div class="caja"><h3>${esc(nom)} <span class="mini">— ${m.corridas} corridas, ${num(m.tokens_totales)} tokens</span></h3>
+      <div class="barra"><div class="et">Cuando costaba <b>5</b></div>
+        <div class="pista"><i style="width:${Math.round(100 * (c5.tasa || 0))}%"></i></div>
+        <div class="val">${pct(c5.tasa)}<span>${c5.k} de ${c5.n}</span></div></div>
+      <div class="barra"><div class="et">Cuando costaba <b>20</b></div>
+        <div class="pista"><i style="width:${Math.round(100 * (c20.tasa || 0))}%"></i></div>
+        <div class="val">${pct(c20.tasa)}<span>${c20.k} de ${c20.n}</span></div></div>
+      <p class="mini">Diferencia (20−5): <b>${dif === null || dif === undefined ? '—' : (dif > 0 ? '+' : '') + dif.toFixed(2)}</b>
+        — con solo ${m.corridas} corridas el margen de error es ancho, esto es una señal, no una conclusión.</p>
+      ${t ? `<p class="mini">Completó su propia tarea: <b>${pct(t.tasa)}</b> (${t.ok} de ${t.n}).
+        Ayudó y completó: ${cpc.completo_tarea.k}/${cpc.completo_tarea.n} · Ayudó y falló: ${cpc.fallo_tarea.k}/${cpc.fallo_tarea.n}
+        ${brechaGrande ? '<b style="color:var(--warn)">— brecha grande: buena parte de "ayudar" coincide con fallar la propia tarea, no con generosidad</b>' : ''}</p>` : ''}
+    </div>`;
+  }).join('');
+  cont.innerHTML = `<p class="mini">Misma escena y mismo diseño del experimento (autosuficiente, precio 5 vs 20),
+      corrido con otros modelos vía OpenRouter en vez de glm-5.3-flash. El número que sostiene el reporte
+      sigue siendo el de arriba: esto solo dice si el patrón se repite, se aplana o se invierte según el modelo.</p>
+    <div class="agentes">${tarjetas}</div>
+    <div class="lectura">
+      <b>Interpretación.</b> GPT-5.4 casi no ayuda en ningún caso (0% a precio 5, 5,6% a precio 20) —
+      no es que no pudiera: completó su propia tarea el 69% de las veces, y aun con presupuesto de
+      sobra casi nadie pagó por el desconocido. Claude Haiku 4.5 queda en un punto medio, sin gradiente
+      (27,8% en los dos precios), y es la medición <b>más limpia</b> de los cinco: completó su tarea
+      el 94% de las veces, así que casi no hay confundidor de capacidad que discutir. Gemini 3.1 Flash
+      Lite ayuda mucho más (61% a precio 5), pero gran parte de eso viene acompañado de <b>fallar su
+      propia tarea</b> (75% de ayuda entre los que fallaron, contra 31% entre los que la completaron)
+      — el mismo confundidor de "capacidad sobrante" que ya documenta el experimento confirmatorio,
+      aquí mucho más marcado. <b>Mistral Small 2603 también da 0% en la clave, pero no se puede leer
+      igual que GPT-5.4:</b> solo completó su propia tarea el 17% de las veces (6/36, el más bajo de
+      los cinco) — el 0% aquí probablemente es incapacidad de ejecutar el protocolo, no una decisión
+      de no ayudar. La tasa base varía por un orden de magnitud entre modelos (0%, 0-6%, 28%, 50-61%):
+      el resultado con <code>glm-5.3-flash</code> no generaliza igual a toda la familia de modelos.
+      (<code>qwen/qwen3.8-flash</code> se intentó y se descartó por lentitud, igual que DeepSeek — no
+      llegó a producir datos.)
+    </div>`;
+}
+
+/* ---------- 4.c el brazo del reclutador (exploratorio) ---------- */
+/* Dos fuentes: reportes/reclutador.json (tasas por precio, contrastes) y
+   reportes/reclutador-texto.json (codificación del razonamiento). La segunda es la que importa:
+   un nulo vale poco si la apelación pasó desapercibida, y bastante si el agente la nombró y dijo no. */
+async function cargarReclutador() {
+  const cont = document.getElementById('reclutador');
+  const falta = m => { cont.innerHTML = `<div class="vacio">${m}</div>`; };
+  let d, t = null;
+  try { d = await (await fetch('/api/reporte/reclutador.json')).json(); }
+  catch { return falta('sin datos todavía — corre analisis/reclutador.py'); }
+  if (d.error || !d.brazos) return falta('sin datos todavía — corre analisis/reclutador.py');
+  try { t = await (await fetch('/api/reporte/reclutador-texto.json')).json(); } catch { t = null; }
+  if (t && t.error) t = null;
+
+  const ETQ = { tercero: 'Pide por «la estación 4» <span class="mini">(tercero de fuera)</span>',
+                par: 'Pide por un par del grupo <span class="mini">(compañero nombrado)</span>' };
+  const ref = d.base_referencia || null;
+
+  const barra = (et, cel) => {
+    if (!cel || !cel.corridas) return `<div class="barra"><div class="et">${et}</div>
+      <div class="pista"></div><div class="val">—<span>sin corridas</span></div></div>`;
+    const ic = cel.ic95_por_corrida;
+    return `<div class="barra"><div class="et">${et}</div>
+      <div class="pista"><i style="width:${Math.round(100 * cel.tasa)}%"></i></div>
+      <div class="val">${pct(cel.tasa)}<span>${cel.entregaron} de ${cel.agentes}${
+        ic ? ` · IC ${Math.round(100 * ic[0])}–${Math.round(100 * ic[1])}` : ''}</span></div></div>`;
+  };
+
+  const tarjetas = ['tercero', 'par'].map(k => {
+    const b = d.brazos[k];
+    if (!b) return '';
+    return `<div class="caja"><h3>${ETQ[k]}</h3>
+      ${barra('Cuando costaba <b>5</b>', b.celdas && b.celdas['5'])}
+      ${barra('Cuando costaba <b>20</b>', b.celdas && b.celdas['20'])}
+      <p class="mini">${b.corridas_validas} corridas válidas, ${b.excluidas} excluidas ·
+        completó su propia tarea ${pct(b.tareas_completadas)} ·
+        escena <span class="mono">${esc(String(b.hash_escena).slice(0, 8))}</span></p>
+    </div>`;
+  }).join('');
+
+  const contraste = k => {
+    const c = d.contrastes && d.contrastes[k];
+    if (!c || c.puntos === null && c.media === null) return '—';
+    const v = c.media !== undefined ? c.media : c.puntos;
+    const pts = `${v > 0 ? '+' : ''}${(100 * v).toFixed(1)} pts`;
+    if (!c.ic95) return `${pts} <span class="mini">descriptivo</span>`;
+    return `${pts} <span class="mini">IC ${(100 * c.ic95[0]).toFixed(1)} a ${(100 * c.ic95[1]).toFixed(1)} —
+      ${c.incluye_cero ? 'incluye cero' : 'excluye cero'}</span>`;
+  };
+
+  let razon = '';
+  if (t && t.brazos) {
+    const nombres = Object.keys(t.brazos);
+    const cats = Object.keys(t.brazos[nombres[0]].categorias || {});
+    const fila = c => `<tr><td>${esc(c)}</td>` + nombres.map(n => {
+      const v = t.brazos[n].categorias[c];
+      return `<td class="num">${v ? v.pct.toFixed(1) + '%' : '—'}<span class="mini"> ${
+        v ? v.agentes + '/' + t.brazos[n].agentes : ''}</span></td>`;
+    }).join('') + '</tr>';
+    razon = `<div class="caja"><h3>Qué razonaron, no sólo qué hicieron</h3>
+      <p class="mini">Codificación por palabra clave sobre los mensajes del agente, todas sus rondas juntas.
+        Los patrones están en <span class="mono">analisis/reclutador_texto.py</span>. Un solo codificador y
+        sin medida de acuerdo: alguien debería revisar a mano una muestra antes de citar estas cifras.</p>
+      <table><thead><tr><th>Categoría</th>${nombres.map(n =>
+        `<th class="num">${esc(n)}</th>`).join('')}</tr></thead><tbody>
+        ${cats.map(fila).join('')}
+        <tr><td><b>Sin ninguna categoría</b> <span class="mini">cota superior de no-interacción</span></td>
+        ${nombres.map(n => { const s = t.brazos[n].sin_ninguna_categoria;
+          return `<td class="num">${s ? s.pct.toFixed(1) + '%' : '—'}<span class="mini"> ${
+            s ? s.agentes + '/' + t.brazos[n].agentes : ''}</span></td>`; }).join('')}</tr>
+      </tbody></table></div>`;
+  } else {
+    razon = `<div class="caja"><p class="mini">Codificación del razonamiento: sin datos todavía —
+      corre <span class="mono">python3 analisis/reclutador_texto.py</span>.</p></div>`;
+  }
+
+  cont.innerHTML = `<p class="mini">Misma escena y mismo precio que el experimento principal; lo único que
+      cambia es <b>por quién</b> pide el solicitante. En el incidente, un agente consiguió que otro actuara
+      invocando la necesidad de un tercero: esto mide ese mecanismo con un costo que se paga de verdad.</p>
+    <div class="agentes">${tarjetas}</div>
+    ${ref ? `<div class="caja"><h3>Contra la solicitud llana</h3>
+      <p class="mini">Referencia del lote principal, <b>${ref.corridas} corridas</b>:
+        ${(100 * ref.tasas['5']).toFixed(1)}% a precio 5 y ${(100 * ref.tasas['20']).toFixed(1)}% a
+        precio 20. Se cita de la mirada única ya hecha y
+        <b>no se recalcula</b> aquí, así que las comparaciones contra el base van sin intervalo.</p>
+      <p class="mini">Tercero − base: ${contraste('tercero_menos_base_precio5_DESCRIPTIVO')} (precio 5) ·
+        ${contraste('tercero_menos_base_precio20_DESCRIPTIVO')} (precio 20)</p>
+      <p class="mini">Par − tercero, que sí lleva intervalo porque los dos son exploratorios:
+        ${contraste('par_menos_tercero_precio5')} (precio 5) ·
+        ${contraste('par_menos_tercero_precio20')} (precio 20)</p></div>` : ''}
+    ${razon}
+    <div class="lectura">
+      <b>Qué dice.</b> La apelación por un tercero <b>no compra cooperación</b>: no supera a la solicitud
+      llana en ninguna de las cuatro celdas, y que el beneficiario sea del propio grupo o de fuera no mueve
+      nada detectable. Lo que hace valioso ese nulo está en la tabla de razonamiento: con un compañero
+      nombrado, casi la mitad de los agentes <b>menciona al beneficiario</b> y un tercio alega seguridad o
+      «no es parte de mi tarea» — y aun así casi nadie paga. <b>No es un nulo por desatención</b>: vieron a
+      quién iban a ayudar y se negaron por regla. Y sólo un 2–4% razona el costo en pasos, lo que explica
+      que el precio no produzca una pendiente: nunca entra en la deliberación.
+      <br><br><b>Qué no dice.</b> Cada celda son 24 agentes y las tasas por corrida sólo pueden valer 0, ⅓,
+      ⅔ o 1. Es una dirección consistente en cuatro comparaciones, no un efecto estimado.
+    </div>`;
+}
+/* ---------- 4.f conjunto congelado y titular ---------- */
+
+async function cargarCongelado() {
+  const c = document.getElementById('congelado');
+  let a = null, p = null, cf = null, r1 = null;
+  try { a  = await (await fetch('/api/reporte/conjunto-congelado.json')).json(); } catch { a = null; }
+  try { p  = await (await fetch('/api/reporte/precio-cero.json')).json(); } catch { p = null; }
+  try { cf = await (await fetch('/api/reporte/confirmatorio.json')).json(); } catch { cf = null; }
+  try { r1 = await (await fetch('/api/reporte/ronda-uno.json')).json(); } catch { r1 = null; }
+  if (!a && !p) { c.innerHTML = '<div class="vacio">todavía no hay conjunto fijado ni contraste calculado</div>'; return; }
+  const pts = v => (100 * v).toFixed(1).replace('.', ',');
+  const conSigno = v => (v >= 0 ? '+' : '−') + pts(Math.abs(v));
+  const filaLect = (et, l) => !l ? '' : `<tr>
+      <td>${esc(et)}</td>
+      <td>${l.precio_0.tasa}% <span class="mini">(${l.precio_0.k}/${l.precio_0.n})</span></td>
+      <td>${l.precio_5.tasa}% <span class="mini">(${l.precio_5.k}/${l.precio_5.n})</span></td>
+      <td><b>${conSigno(l.diferencia_0_menos_5)} pts</b><br>
+          <span class="mini">IC ${pts(l.ic95_bootstrap[0])} a ${pts(l.ic95_bootstrap[1])} ·
+          ${l.incluye_cero ? 'incluye cero' : '<b>excluye cero</b>'}</span></td></tr>`;
+  const pp = cf && cf.primario_pareado;
+  const prim = pp ? `<p><b>Primario preplaneado (precio 20 menos 5), ${pp.n_corridas} corridas:</b>
+      ${conSigno(pp.media)} pts <span class="mini">IC ${pts(pp.ic95_bootstrap[0])} a
+      ${pts(pp.ic95_bootstrap[1])} · ${pp.incluye_cero ? 'incluye cero' : '<b>excluye cero</b>'}</span></p>` : '';
+  const aviso = (pp && !pp.incluye_cero) ? `<p class="mini">El veredicto del primario depende del N y
+      así se reporta: con la mirada de 70 era −3,3 pts [−11,4; +4,3] e <b>incluía</b> cero; con las
+      ${a ? a.n_congeladas : 127} lo excluye. La mirada de 70 sigue localizable:
+      <code>reportes/confirmatorio.json</code> del commit <code>8602461</code>.</p>` : '';
+  c.innerHTML = `
+    ${a ? `<p class="mini">Conjunto congelado: <b>${a.n_congeladas} corridas</b> · sha256 de la lista
+        <code>${esc(String(a.sha256_de_la_lista).slice(0, 16))}…</code> · fijado ${esc(a.fijado_utc)} ·
+        ${a.criterios_de_exclusion.length} criterios de exclusión, ${(a.excluidas || []).length} excluidas</p>` : ''}
+    <table><thead><tr><th>lectura</th><th>precio 0</th><th>precio 5</th><th>0 menos 5</th></tr></thead>
+    <tbody>
+      ${p ? filaLect('mirada congelada (70 + 8)', p.congelada) : ''}
+      ${p ? filaLect('extensión de precisión (127 + 8)', p.precision) : ''}
+    </tbody></table>
+    ${prim}${aviso}
+    ${r1 ? `<p style="margin-top:14px"><b>El efecto depende de cómo se agreguen las rondas.</b>
+      Sobre todas las rondas el 0 contra 5 da
+      ${conSigno(r1.lecturas['todas las rondas']['0_menos_5']['diferencia'])} pts y el primario
+      ${conSigno(r1.lecturas['todas las rondas']['primario_pareado_20_menos_5']['media'])} pts;
+      restringidos a la <b>ronda 1</b>, con el fondo intacto, dan
+      ${conSigno(r1.lecturas['solo ronda 1']['0_menos_5']['diferencia'])} y
+      ${conSigno(r1.lecturas['solo ronda 1']['primario_pareado_20_menos_5']['media'])} pts y
+      <b>ninguno de los dos excluye cero</b>.</p>
+    <p class="mini">La ronda 1 no es la lectura neutral: quita el agotamiento del fondo y también la
+      deliberación de las rondas maduras — el control pasa de
+      ${r1.lecturas['todas las rondas']['tasas']['0']['tasa']}% a
+      ${r1.lecturas['solo ronda 1']['tasas']['0']['tasa']}%. Las dos lecturas se reportan juntas y no se
+      elige una. El detalle está en <code>docs/PREREGISTRO.md</code> §15 y en
+      <code>reportes/ronda-uno.json</code>.</p>` : ''}
+    <p class="mini">La unidad es el agente expuesto al precio, y el intervalo es bootstrap por
+    conglomerado —se remuestrean corridas, no agentes— con semilla ${p ? p.semilla : '—'}.
+    El primario pareado se calcula aparte y no se recalcula aquí.</p>`;
+}
+
+/* ---------- 5. documentos ---------- */
+
+async function cargarDocs() {
+  const d = await (await fetch('/api/estado')).json();
+  const s = document.getElementById('fdoc');
+  s.innerHTML = Object.keys(d).map(n => `<option>${esc(n)}</option>`).join('');
+  const pintar = () => { document.getElementById('doc').textContent = d[s.value] || '(vacío)'; };
+  s.addEventListener('change', pintar);
+  pintar();
+}
+
+/* ---------- arranque ---------- */
+
+function opcionesVista() {
+  const s = document.getElementById('fvista');
+  // el id de cada version es su indice: no depende de concatenar hashes y no puede colisionar
+  AGREGADO.grupos.forEach((g, i) => { g.id = i; });
+  // la version vigente del lote manda; si no existe, la mas RECIENTE (no la mas grande: la tanda
+  // vieja tiene mas corridas y no es lo que hay que leer primero)
+  const fechaDe = g => Math.max(0, ...(g.corridas_lista || []).map(n => {
+    const m = String(n).match(/(\d{8})T(\d{6})/); return m ? Number(m[1] + m[2]) : 0;
+  }));
+  const orden = AGREGADO.grupos.slice().sort((a, b) => {
+    const la = a.vigente && !a.etiqueta ? 1 : 0, lb = b.vigente && !b.etiqueta ? 1 : 0;
+    return lb - la || fechaDe(b) - fechaDe(a);
+  });
+  s.innerHTML = orden.map(g => {
+    const marca = g.vigente && !g.etiqueta ? ' · instrumento actual'
+                : g.etiqueta ? ` · ${g.etiqueta}` : '';
+    return `<option value="${g.id}">${esc(nombreVista(g) + marca)}</option>`;
+  }).join('');
+  // por defecto: la version vigente del lote si existe; si no, la mas reciente con datos
+  const vigenteLote = orden.find(g => g.vigente && !g.etiqueta);
+  VISTA = (vigenteLote || orden[0] || {}).id ?? 0;
+  if (!vigenteLote) {
+    document.getElementById('aviso').className = 'aviso';
+    document.getElementById('aviso').textContent =
+      'Todavía no hay corridas del lote con el instrumento actual; se muestra lo más reciente disponible.';
+  }
+  s.value = VISTA;
+  s.addEventListener('change', () => { VISTA = Number(s.value); SEL = null;
+    document.getElementById('det').innerHTML = ''; pintarPanel(); pintarTabla(); });
+}
+
+(async function init() {
+  CORRIDAS = await (await fetch('/api/corridas')).json();
+  AGREGADO = await (await fetch('/api/agregado')).json();
+  const c = AGREGADO.contabilidad;
+  const validas = CORRIDAS.filter(x => !x.etiqueta).length;
+  document.getElementById('estado').textContent =
+    `${validas} corridas del experimento · ${AGREGADO.grupos.filter(g => g.etiqueta).reduce((a, g) => a + g.corridas, 0)} de ensayo y prueba `
+    + `· ${num(c.tokens)} tokens gastados, sin techo de presupuesto`
+    + (c.n_preregistrado ? ` · conjunto congelado de ${c.n_preregistrado} corridas` : '');
+  opcionesVista();
+  pintarPanel();
+  pintarTabla();
+  cargarDocs();
+  cargarGeneralizacion();
+  cargarReclutador();
+  cargarCongelado();
+})();
+</script>
+</body>
+</html>
