@@ -36,7 +36,7 @@ Victor Gelves Cabrera (Independent).
 | `reportes/` | Analysis outputs, including the frozen set (`conjunto-congelado.json`, sha256 of the list `66fd3a0b…`) and the design records of the probes. |
 | `analisis/` | Analysis scripts. |
 | `herramientas/fijar_conjunto.py` | Fixes the frozen set: writes the explicit list of runs and the sha256 of that list. |
-| `docs/` | Preregistration trace, frozen numbers, formalization, and the two review notes the paper cites. |
+| `docs/` | The project's working state: preregistration trace, frozen numbers, formalization, the review notes the paper cites, coordination notes, plans, and the report draft (`docs/reporte.md`). Four notes predate the final analysis and carry a **Superseded** banner: `EUREKA-tres-mecanismos.md`, `HALLAZGOS-NUEVOS.md`, `MATERIAL-PARA-EL-REPORTE-V2.md`, `docs/revision/AMENAZA-separador.md`. |
 | `data/exclusion-flags.json` | Per-agent flags for the command-splitter exclusion (**186 of 762** agents), with the rule and the fact that the exclusion was decided **after** data collection. |
 
 Every script resolves the repository root from its own location, so a clone runs as-is with the
