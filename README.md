@@ -1,4 +1,4 @@
-# Rare and Price-Insensitive: Costly Cooperation Between LLM Agents
+# Rare Once It Costs Anything: Costly Cooperation Between LLM Agents
 
 Paper, harness, and data for the **AI Incident Response Sprint** (Apart Research, 11–14 September 2026).
 
