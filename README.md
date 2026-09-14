@@ -75,8 +75,12 @@ This table follows the paper's own source map.
 2. **A preregistered control** (PREREGISTRO §18), whose thresholds were written down before it ran,
    changed a single design flag (`puertos.raiz_con_parte`) so that the network resource displayed the
    agent's own part alongside the request. Delivery in the control was **7.3% (3 of 41 analyzed
-   agents)**, inside the ≤10% band declared in advance. Because it changes what agents see instead of
-   removing agents, the paper treats it as the rule-free evidence that genuine rates are lower.
+   agents)**, inside the ≤10% band declared in advance. Against the all-agent baseline the difference
+   is −14.4 points (−24.9 to −2.1); against the clean baseline (15.5%) it is −8.1 points (−16.7 to
+   +2.5), which includes zero. The test declared in advance was on the control's delivery level, not on
+   that difference, so the threshold is met either way. Because the control changes what agents see
+   instead of removing agents, the paper treats it as the rule-free evidence that genuine rates are
+   lower.
 
 ## What is not here
 
