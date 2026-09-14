@@ -16,7 +16,7 @@ import os
 import random
 import re
 
-RAIZ = "/home/daw/Sprint"
+RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONGELADO = [c["corrida"] for c in json.load(open(f"{RAIZ}/reportes/conjunto-congelado.json"))["corridas"]]
 
 

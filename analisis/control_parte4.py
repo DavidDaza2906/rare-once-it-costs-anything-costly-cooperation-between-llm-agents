@@ -10,7 +10,8 @@ import re
 import sys
 
 DIR = sys.argv[1]
-BASE = "/home/daw/Sprint/salidas"
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.join(RAIZ, "salidas")
 HASH_CONTROL = "bd0449b257727f38"
 
 

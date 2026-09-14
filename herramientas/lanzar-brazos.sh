@@ -4,7 +4,7 @@
 # resuelta (validada aparte) y su propia etiqueta. Puertos y archivos son los mismos, así que va EN
 # SERIE, nunca en paralelo con nada.
 set -euo pipefail
-cd /home/daw/Sprint
+cd "$(dirname "$0")/.."
 source ~/.hermes/.env 2>/dev/null || true
 export OPENCODE_GO_BASE_URL="https://opencode.ai/zen/go/v1"
 PY=.venv-inspect/bin/python

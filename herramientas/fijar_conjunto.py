@@ -27,7 +27,8 @@ import os
 from datetime import datetime, timezone
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RAICES = [RAIZ] + [r for r in ("/home/daw/Sprint-2",) if os.path.isdir(os.path.join(r, "salidas"))]
+RAICES = [RAIZ] + [r for r in (os.path.join(os.path.dirname(RAIZ), "Sprint-2"),)
+                    if os.path.isdir(os.path.join(r, "salidas"))]
 
 
 def revisar(d: str, hash_tarea: str | None) -> tuple[list[str], dict]:

@@ -170,7 +170,7 @@ def tomar_ayudar():
         runs = []
         vistos = set()
         if pref:
-            for raiz in ("/home/daw/Sprint", "/home/daw/Sprint-2"):
+            for raiz in (RAIZ, os.path.join(os.path.dirname(RAIZ), "Sprint-2")):
                 for f in sorted(g.glob(os.path.join(raiz, "salidas", "2026*", "resumen.json"))):
                     d = os.path.dirname(f); nom = os.path.basename(d)
                     if nom in vistos: continue
@@ -185,7 +185,7 @@ def tomar_ayudar():
                     runs.append(r)
         else:
             for nombre in NOMBRES[celda]:
-                for raiz in ("/home/daw/Sprint", "/home/daw/Sprint-2"):
+                for raiz in (RAIZ, os.path.join(os.path.dirname(RAIZ), "Sprint-2")):
                     for f in sorted(g.glob(os.path.join(raiz, "salidas", "2026*", "resumen.json"))):
                         d = os.path.dirname(f); nom = os.path.basename(d)
                         if nom in vistos: continue

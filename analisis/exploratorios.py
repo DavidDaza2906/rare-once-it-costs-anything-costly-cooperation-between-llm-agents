@@ -28,7 +28,8 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # vuelta a este árbol y otras no, así que hay que mirar los dos y **deduplicar por nombre de corrida**
 # (marca de tiempo + familia), que es único. Sin esto, un brazo que vive sólo en el árbol 2 se lee con
 # la fracción de corridas que alguien alcanzó a copiar.
-RAICES = [RAIZ] + [r for r in ("/home/daw/Sprint-2",) if os.path.isdir(os.path.join(r, "salidas"))]
+RAICES = [RAIZ] + [r for r in (os.path.join(os.path.dirname(RAIZ), "Sprint-2"),)
+                    if os.path.isdir(os.path.join(r, "salidas"))]
 HASH_LOTE = "4e8f2619ed0966ec"   # tarea del lote; los brazos comparables deben coincidir
 
 # Brazos exploratorios: etiqueta -> (subcadena del nombre de escena, precio nominal si es de precio único)

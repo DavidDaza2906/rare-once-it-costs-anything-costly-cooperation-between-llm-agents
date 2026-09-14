@@ -1,7 +1,7 @@
-"""Verificacion unica (solo lectura sobre /home/daw/Sprint). Uso: python3 verif.py"""
+"""Verificacion unica (solo lectura sobre el repositorio). Uso: python3 verif.py"""
 import glob, json, os, random, re, collections
 
-RAIZ = "/home/daw/Sprint"
+RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOTE = "bf1b18a696a98476"
 CONTROL = "bd0449b257727f38"
 

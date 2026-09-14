@@ -20,7 +20,8 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # El árbol 2 corre en su propio worktree y escribe en SU `salidas/`. Se miran los dos y se deduplica
 # por nombre de corrida: sin esto, un brazo que sólo vive allá no se vigila (y el 14 sep un servicio
 # caído estuvo corrompiendo corridas seis horas sin que nada avisara).
-RAICES = [RAIZ] + [r for r in ("/home/daw/Sprint-2",) if os.path.isdir(os.path.join(r, "salidas"))]
+RAICES = [RAIZ] + [r for r in (os.path.join(os.path.dirname(RAIZ), "Sprint-2"),)
+                    if os.path.isdir(os.path.join(r, "salidas"))]
 
 
 def leer(d: str) -> dict:

@@ -18,7 +18,7 @@ import json
 import os
 import sys
 
-RAIZ = "/home/daw/Sprint"
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ETIQUETA = sys.argv[1] if len(sys.argv) > 1 else "mini-piloto"
 
 

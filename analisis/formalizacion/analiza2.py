@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json, os, random, collections, statistics
 import os; S = os.path.dirname(os.path.abspath(__file__))
-ROOT = '/home/daw/Sprint/salidas'
+ROOT = os.path.normpath(os.path.join(S, '..', '..', 'salidas'))
 runs = json.load(open(f'{S}/runs.json'))
 random.seed(20260913)
 

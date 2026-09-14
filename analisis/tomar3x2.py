@@ -36,7 +36,8 @@ import re
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # El árbol 2 escribe en SU `salidas/`; se miran los dos y se deduplica por nombre de corrida.
-RAICES = [RAIZ] + [r for r in ("/home/daw/Sprint-2",) if os.path.isdir(os.path.join(r, "salidas"))]
+RAICES = [RAIZ] + [r for r in (os.path.join(os.path.dirname(RAIZ), "Sprint-2"),)
+                    if os.path.isdir(os.path.join(r, "salidas"))]
 SEMILLA = 20260913
 MIN_CORRIDAS = 3
 

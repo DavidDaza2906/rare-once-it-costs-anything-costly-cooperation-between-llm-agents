@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json, os, random, collections, statistics, glob
 import os; S = os.path.dirname(os.path.abspath(__file__))
+R = os.path.normpath(os.path.join(S, '..', '..'))
 runs = json.load(open(f'{S}/runs.json'))
 random.seed(20260913)
 
@@ -64,13 +65,13 @@ for lote, p in curva:
 print('\n=== B2. factorial-base: congelado 70 vs extensión, y por lote de origen ===')
 fb = sorted(val[('factorial-base', '4e8f2619ed0966ec')], key=lambda r: r['dir'])
 print('  válidas factorial-base:', len(fb))
-cong = [c['corrida'] for c in json.load(open('/home/daw/Sprint/reportes/conjunto-congelado.json'))['corridas']]
+cong = [c['corrida'] for c in json.load(open(f'{R}/reportes/conjunto-congelado.json'))['corridas']]
 fb70 = [r for r in fb if r['dir'] in cong[:70]]; fbext = [r for r in fb if r['dir'] in cong[70:]]; fbno = [r for r in fb if r['dir'] not in cong]
 for nom, rs in [('primeras 70', fb70), ('extensión 57', fbext), ('válidas no congeladas', fbno)]:
     print(f'  {nom:22s} n={len(rs)} p5', tasa(rs, 5), 'p20', tasa(rs, 20))
 # por lote manifest
 lote_de = {}
-for f in glob.glob('/home/daw/Sprint/salidas/lote_*.json'):
+for f in glob.glob(f'{R}/salidas/lote_*.json'):
     m = json.load(open(f))
     for d in m['detalle']:
         lote_de[os.path.basename(os.path.dirname(d['log']))] = m['etiqueta']
@@ -110,7 +111,7 @@ for r in fb:
 import re
 sp_by = collections.defaultdict(list)
 for r in fb:
-    for l in open(f"/home/daw/Sprint/salidas/{r['dir']}/eventos.jsonl"):
+    for l in open(f"{R}/salidas/{r['dir']}/eventos.jsonl"):
         e = json.loads(l)
         if e['tipo'] == 'sin_presupuesto': sp_by[(r['dir'], e['agente'])].append(e['detalle'])
 for p in (5, 20):
